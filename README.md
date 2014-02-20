@@ -6,12 +6,12 @@ Retrieve article information from Google Scholar in Python
 Features
 --------
 
- - Extract publication title, authors, year, citation count and number of online version
+ - Extract publication title, authors, year, citation count and number of online versions
  - Format results in json, pickle, or nested dicts
  - FieldSets provide an easy way to update the scraper as the Scholar html layout changes
  - Command line interface to extract articles directly to terminal/file
 
-Scholar is influenced heavily by [scholar.py](https://github.com/ckreibich/scholar.py) from Christian Kreibich, and includes a number of the patches that were incorporated into that. Scholar is currently being used inside a Django app as a Celery background task to periodically update paper information.
+Scholar is influenced heavily by [scholar.py](https://github.com/ckreibich/scholar.py) from Christian Kreibich, and includes a number of the patches that were incorporated into that.
 
 Scholar has been tested with Python 2.7 and 3.3
 
@@ -28,7 +28,7 @@ scholar.py --max_results 1
            Theory of edge detection
 ```
 
-From within a Python project
+From within a Python project:
 
 ```python
 import scholar as gs

@@ -1,4 +1,8 @@
 #! /usr/bin/env python
+"""
+scholar
+A module for retrieving article information from Google Scholar queries
+"""
 
 # ----------------------------------------------------------------------------
 # Imports
@@ -112,6 +116,9 @@ class FieldSet(object):
 # Fetcher and Parser
 # ----------------------------------------------------------------------------
 class Fetcher(object):
+  """
+  Fetch URLs and maintain cookies
+  """
   user_agent = 'Mozilla/5.0 (X11; U; FreeBSD i386; en-US; rv:1.9.2.9) Gecko/20100913 Firefox/3.6.9'
 
   def __init__(self):
@@ -124,6 +131,9 @@ class Fetcher(object):
 
 
 class Parser(object):
+  """
+  Parse html responses into Fieldsets
+  """
   def parse(self, html, fieldset, max_results=10):
     soup = BeautifulSoup(html)
     results = []
@@ -150,6 +160,10 @@ class Parser(object):
 # Article
 # ----------------------------------------------------------------------------
 class Article(FieldSet):
+  """
+  A concrete Fieldset for scraping article information from a
+  Google Scholar query
+  """
   find_all      = staticmethod(lambda soup: soup.find(role='main').find_all(class_="gs_ri"))
   title         = Field(lambda soup: soup.find('h3').find('b').text)
   authors       = Field(lambda soup: soup.find(class_='gs_a').text.split('-')[0].strip())
@@ -188,6 +202,11 @@ def query(search='', author='', max_results=10, fetcher=None, fieldset=Article):
 # Command Line Interface
 # ----------------------------------------------------------------------------
 if __name__ == '__main__':
+  """
+  Retrieve article information from Google Scholar on the command line. e.g.
+
+    scholar.py --max_results 1 --encoding json --file articles.json --author Marr Theory of edge detection
+  """
   import argparse
 
   # setup the parser
