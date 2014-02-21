@@ -6,7 +6,7 @@ Retrieve article information from Google Scholar in Python
 Features
 --------
 
-- Extracts the following information for each article
+- Extracts the following information for each article:
     - title
     - authors
     - year
@@ -18,12 +18,12 @@ Features
     - URL to versions
 - Format results in json, pickle, or nested dicts
 - FieldSets provide an easy way to update the scraper as the Scholar html layout changes
-- Integrity tests to verify whether the parser is working, or identify which fields are no longer being parsed correctly.
+- Integrity tests to verify whether the parser is working, or identify which fields are no longer being parsed correctly
 - Command line interface to extract articles directly to terminal/file
 
 Scholar is influenced heavily by [scholar.py](https://github.com/ckreibich/scholar.py) from Christian Kreibich, and includes a number of the patches which were incorporated into that project.
 
-Scholar has been tested with Python 2.7 and 3.3
+Scholar has been tested with Python 2.7 and 3.3.
 
 Example
 -------
