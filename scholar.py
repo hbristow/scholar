@@ -38,6 +38,7 @@ except ImportError:
 # formatters
 import json
 import pickle
+import pprint
 
 
 # ----------------------------------------------------------------------------
@@ -146,10 +147,10 @@ class Parser(object):
       # locate all of the article fields in the match
       for fieldname, field in inst._fields.items():
         try:
-          value = field.find(match)
+          value = field.type(field.find(match))
         except (TypeError, AttributeError):
           value = field.default
-        setattr(inst, fieldname, field.type(value))
+        setattr(inst, fieldname, value)
       results.append(inst)
 
     # return the results
@@ -165,7 +166,7 @@ class Article(FieldSet):
   Google Scholar query
   """
   find_all      = staticmethod(lambda soup: soup.find(role='main').find_all(class_="gs_ri"))
-  title         = Field(lambda soup: soup.find('h3').find('b').text)
+  title         = Field(lambda soup: soup.find('h3').text)
   authors       = Field(lambda soup: soup.find(class_='gs_a').text.split('-')[0].strip())
   year          = Field(lambda soup: re.search(r'[0-9]{4}', soup.find(class_='gs_a').text).group(0), type=int)
   num_citations = Field(lambda soup: re.search(r'Cited by ([0-9]+)', soup.text).group(1), type=int)
@@ -227,8 +228,8 @@ if __name__ == '__main__':
   # format the articles
   merged = [article.dumps() for article in articles]
   formatted = {
-    'dict':   lambda: merged,
-    'json':   lambda: json.dumps(merged, indent=2),
+    'dict':   lambda: pprint.pformat(merged, indent=2),
+    'json':   lambda: json.dumps(merged, indent=2, sort_keys=True, ensure_ascii=False),
     'pickle': lambda: pickle.dumps(merged),
   }.get(args.encoding, lambda: None)()
 
