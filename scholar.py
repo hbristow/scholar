@@ -103,14 +103,17 @@ class FieldSet(object):
       return cls.name() + 's'
 
   def dumps(self, format=None):
-    # create a dictionary representation of the FieldSet
-    d = self._fields
-    for key in d:
-      d[key] = getattr(self, key)
-    if format == 'json':
-      import json
-      return json.dumps(d, indent=2, ensure_ascii=False)
-    return d
+    """
+    create a serialized representation of the FieldSet
+    format - 'dict'   a raw dictionary representation
+             'json'   a json unicode string
+             'pickle' a pickled representation
+    """
+    d = dict((key, getattr(self, key)) for key in self._fields)
+    return {
+      'json':   lambda: json.dumps(d, indent=2, ensure_ascii=False),
+      'pickle': lambda: pickle.dumps(d)
+    }.get(format, lambda: d)()
 
 
 # ----------------------------------------------------------------------------
