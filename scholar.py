@@ -231,20 +231,23 @@ def email_developer(msg, subject='Bugreport for scholar package',
   """
   Email the developer with potential bugs (called by test_integrity)
   """
-  import smtplib as server
-  import email.mime.text as email
+  from subprocess import Popen, PIPE
+  from email.mime.text import MIMEText
   to = 'hilton.bristow+scholar@gmail.com'
-  msg = email.MIMEText(msg)
+  msg = MIMEText(msg)
   msg['Subject'] = subject
   msg['From'] = from_
   msg['To'] = to
 
+  with open('mail.txt', 'w') as f:
+    f.write(msg.as_string())
+
   try:
-    s = server.SMTP('localhost')
-    s.sendmail(from_, to, msg.as_string())
-    s.quit()
+    sendmail = Popen(['/usr/sbin/sendmail', '-t'], stdin=PIPE)
+    sendmail.communicate(msg.as_string())
   except:
     pass
+
 
 _REPORT = (
   '--------------------------------',
@@ -282,6 +285,10 @@ def test_integrity(email_report=True):
       fields += _FIELD_REPORT.format(field=field, status='FAILED*' if failed else 'PASSED')
 
   report = '\n'.join(_REPORT).format(status=status, find_all=find_all, fields=fields)
+  if status == 'FAILED' and email_report:
+    pass
+    #email_developer(report)
+
   return AttributeDict({'report': report, 'passed': status == 'PASSED'})
 
 
