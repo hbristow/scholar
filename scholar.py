@@ -213,7 +213,7 @@ if __name__ == '__main__':
   # setup the parser
   parser = argparse.ArgumentParser(description='Retrieve article information from Google Scholar')
   parser.add_argument('-a', '--author', help='Author name', default='')
-  parser.add_argument('-m', '--max_results', help='Maximum results to return', default=10)
+  parser.add_argument('-m', '--max_results', help='Maximum results to return', type=int, default=10)
   parser.add_argument('-f', '--file', help='Write the results to file')
   parser.add_argument('-e', '--encoding', help='Output encoding - dict, json, pickle', default='json')
   parser.add_argument('search_terms', nargs='+')
