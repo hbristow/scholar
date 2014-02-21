@@ -156,6 +156,16 @@ class Parser(object):
     return results
 
 
+_URL_ROOT   = 'http://scholar.google.com'
+_URL_META   = '/scholar?hl=en&btnG=Search&as_subj=eng&as_sdt=1,5&as_ylo=&as_vis=0'
+_URL_QUERY  = '&q={query}'
+_URL_AUTHOR = '+author:{author}'
+def _format_url(query, author=''):
+  return (_URL_ROOT + _URL_META + _URL_QUERY + (_URL_AUTHOR if author else '')).format(
+    query=quote(query), author=quote(author))
+
+
+
 # ----------------------------------------------------------------------------
 # Article
 # ----------------------------------------------------------------------------
@@ -172,23 +182,13 @@ class Article(FieldSet):
   num_versions  = Field(lambda soup: re.search(r'All ([0-9]+) versions', soup.text).group(1), type=int)
   pdf_url       = Field(lambda soup: soup.find('a', {'href': re.compile(r'.pdf$')})['href'])
   journal_url   = Field(lambda soup: soup.find('h3').find('a', {'href': re.compile(r'(?<!pdf)$')})['href'])
-  citations_url = Field('')
-  versions_url  = Field('')
+  citations_url = Field(lambda soup: _URL_ROOT+soup.find('a', text=re.compile(r'Cited by [0-9]+'))['href'])
+  versions_url  = Field(lambda soup: _URL_ROOT+soup.find('a', text=re.compile(r'All [0-9]+ versions'))['href'])
 
 
 # ----------------------------------------------------------------------------
 # query Google Scholar
 # ----------------------------------------------------------------------------
-def _format_url(query, author=''):
-  url_spec = {
-    'base': 'http://scholar.google.com/scholar?hl=en&btnG=Search&as_subj=eng&as_sdt=1,5&as_ylo=&as_vis=0',
-    'query': '&q={query}',
-    'author': '+author:{author}'
-  }
-  return (url_spec['base'] + url_spec['query'] + (url_spec['author'] if author else '')).format(
-    query=quote(query), author=quote(author))
-
-
 def query(search='', author='', max_results=10, fetcher=None, fieldset=Article):
   fetcher = fetcher if fetcher else Fetcher()
   parser = Parser()
