@@ -171,6 +171,7 @@ class Article(FieldSet):
   num_citations = Field(lambda soup: re.search(r'Cited by ([0-9]+)', soup.text).group(1), type=int)
   num_versions  = Field(lambda soup: re.search(r'All ([0-9]+) versions', soup.text).group(1), type=int)
   pdf_url       = Field(lambda soup: soup.find('a', {'href': re.compile(r'.pdf$')})['href'])
+  journal_url   = Field(lambda soup: soup.find('h3').find('a', {'href': re.compile(r'(?<!pdf)$')})['href'])
   citations_url = Field('')
   versions_url  = Field('')
 
