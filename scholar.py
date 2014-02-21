@@ -156,7 +156,7 @@ class Parser(object):
       # locate all of the article fields in the match
       for fieldname, field in inst._fields.items():
         try:
-          value = field.type(field.find(match))
+          value = field.type(field.find(match).strip())
         except (TypeError, AttributeError):
           value = field.default
         setattr(inst, fieldname, value)
@@ -169,12 +169,12 @@ class Parser(object):
 # ----------------------------------------------------------------------------
 # Google Scholar URL spec
 # ----------------------------------------------------------------------------
-_URL_ROOT   = 'http://scholar.google.com'
-_URL_META   = '/scholar?hl=en&btnG=Search&as_subj=eng&as_sdt=1,5&as_ylo=&as_vis=0'
-_URL_QUERY  = '&q={query}'
-_URL_AUTHOR = '+author:{author}'
+URL_ROOT   = 'http://scholar.google.com'
+URL_META   = '/scholar?hl=en&btnG=Search&as_subj=eng&as_sdt=1,5&as_ylo=&as_vis=0'
+URL_QUERY  = '&q={query}'
+URL_AUTHOR = '+author:{author}'
 def _format_url(query, author=''):
-  return (_URL_ROOT + _URL_META + _URL_QUERY + (_URL_AUTHOR if author else '')).format(
+  return (URL_ROOT + URL_META + URL_QUERY + (URL_AUTHOR if author else '')).format(
     query=quote(query), author=quote(author))
 
 
@@ -193,15 +193,15 @@ class Article(FieldSet):
                can be parsed out of the context of an Article soup
   """
   find_all      = staticmethod(lambda soup: soup.find(role='main').find_all(class_="gs_r"))
-  title         = Field(lambda soup: re.sub(r'\[[A-Z]+\]', '', soup.find('h3').text).strip())
-  authors       = Field(lambda soup: soup.find(class_='gs_a').text.split('-')[0].strip())
-  year          = Field(lambda soup: re.search(r'[0-9]{4}', soup.find(class_='gs_a').text).group(0), type=int)
+  title         = Field(lambda soup: re.sub(r'\[[A-Z]+\]', '', soup.h3.text))
+  authors       = Field(lambda soup: soup.find(class_='gs_a').text.split('-')[0])
+  year          = Field(lambda soup: re.search(r'\b\d{4}\b', soup.find(class_='gs_a').text).group(0), type=int)
   num_citations = Field(lambda soup: re.search(r'Cited by ([0-9]+)', soup.text).group(1), type=int)
   num_versions  = Field(lambda soup: re.search(r'All ([0-9]+) versions', soup.text).group(1), type=int)
   pdf_url       = Field(lambda soup: soup.find('a', {'href': re.compile(r'.pdf$')})['href'])
-  journal_url   = Field(lambda soup: soup.find('h3').find('a', {'href': re.compile(r'(?<!pdf)$')})['href'])
-  citations_url = Field(lambda soup: _URL_ROOT+soup.find('a', text=re.compile(r'Cited by [0-9]+'))['href'])
-  versions_url  = Field(lambda soup: _URL_ROOT+soup.find('a', text=re.compile(r'All [0-9]+ versions'))['href'])
+  journal_url   = Field(lambda soup: soup.h3.find('a', {'href': re.compile(r'(?<!pdf)$')})['href'])
+  citations_url = Field(lambda soup: URL_ROOT+soup.find('a', text=re.compile(r'Cited by [0-9]+'))['href'])
+  versions_url  = Field(lambda soup: URL_ROOT+soup.find('a', text=re.compile(r'All [0-9]+ versions'))['href'])
 
 
 # ----------------------------------------------------------------------------
