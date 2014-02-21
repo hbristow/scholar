@@ -85,11 +85,17 @@ class FieldSet(object):
       raise AttributeError(self.__class__.__name__ + ' requires an attribute named find_all')
 
     # move the fields into the FieldSet meta and rebind the actual fields
-    for field in dir(self):
+    for field in self.fields():
       obj = getattr(self, field)
-      if isinstance(obj, Field):
-        setattr(self._fields, field, obj)
-        setattr(self, field, obj.default)
+      setattr(self._fields, field, obj)
+      setattr(self, field, obj.default)
+
+  @classmethod
+  def fields(self):
+    try:
+      return self._fields.keys()
+    except AttributeError:
+      return [field for field in dir(self) if isinstance(getattr(self, field), Field)]
 
   @classmethod
   def name(cls):
