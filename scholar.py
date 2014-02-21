@@ -208,13 +208,80 @@ class Article(FieldSet):
 # query Google Scholar
 # ----------------------------------------------------------------------------
 def query(search='', author='', max_results=10, fetcher=None, fieldset=Article):
+  """
+  query Google Scholar with a search phrase, and optional author
+
+  If making multiple requests, you can supply a fetcher, which stores
+  session cookies, otherwise a new fetcher is created with each call.
+  """
   fetcher = fetcher if fetcher else Fetcher()
-  parser = Parser()
+  parser  = Parser()
 
   url = _format_url(search, author)
   response = fetcher.fetch(url)
   results = parser.parse(response, fieldset, max_results)
   return results
+
+
+# ----------------------------------------------------------------------------
+# Integrity test
+# ----------------------------------------------------------------------------
+def email_developer(msg, subject='Bugreport for scholar package',
+                         from_='bugreport@scholar.hilton.bristow.io'):
+  """
+  Email the developer with potential bugs (called by test_integrity)
+  """
+  import smtplib as server
+  import email.mime.text as email
+  to = 'hilton.bristow+scholar@gmail.com'
+  msg = email.MIMEText(msg)
+  msg['Subject'] = subject
+  msg['From'] = from_
+  msg['To'] = to
+
+  try:
+    s = server.SMTP('localhost')
+    s.sendmail(from_, to, msg.as_string())
+    s.quit()
+  except:
+    pass
+
+_REPORT = (
+  '--------------------------------',
+  ' Integrity Tests:    {status}   ',
+  '                                ',
+  ' Article find_all:   {find_all} ',
+  ' Fields:                        ',
+  '{fields}                        ',
+  '--------------------------------')
+
+_FIELD_REPORT = '   {field:15}   {status}\n'
+
+def test_integrity(email_report=True):
+  """
+  Test the integrity of the parser
+  Used to determine whether the parser may be broken due to a change in
+  Google Scholar layout
+  """
+  # search 'The Lowry Paper'. If we don't get results, something is definitely wrong...
+  articles = query(search='Protein measurement with the Folin phenol reagent')
+
+  status = 'PASSED'
+  find_all = 'PASSED'
+  fields = ''
+  if not articles:
+    status = 'FAILED'
+    fields = _FIELD_REPORT.format(field='NO INFORMATION')
+    find_all = 'FAILED'
+  else:
+    for field in Article.fields():
+      default = getattr(Article, field).default
+      failed = all([getattr(article, field) == default for article in articles])
+      if failed: status = 'FAILED'
+      fields += _FIELD_REPORT.format(field=field, status='FAILED' if failed else 'PASSED')
+
+  report = '\n'.join(_REPORT).format(status=status, find_all=find_all, fields=fields)
+  return AttributeDict({'report': report, 'passed': status == 'PASSED'})
 
 
 # ----------------------------------------------------------------------------
@@ -234,11 +301,18 @@ if __name__ == '__main__':
   parser.add_argument('-m', '--max_results', help='Maximum results to return', type=int, default=10)
   parser.add_argument('-f', '--file', help='Write the results to file')
   parser.add_argument('-e', '--encoding', help='Output encoding - dict, json, pickle', default='json')
-  parser.add_argument('search_terms', nargs='+')
+  parser.add_argument('-t', '--test', help='Test the integrity of the parser', action='store_true')
+  parser.add_argument('search_terms', nargs='*')
 
   # parse the named and positional arguments
   args = parser.parse_args()
   search = ' '.join(args.search_terms)
+
+  # check if we're doing an integrity test
+  if args.test:
+    integrity = test_integrity()
+    print(integrity.report)
+    exit(not integrity.passed)
 
   # retrieve the articles
   articles = query(search, args.author, args.max_results)
