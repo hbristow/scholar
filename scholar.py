@@ -62,11 +62,12 @@ class Field(object):
 
 class AttributeDict(dict):
   """
-  A dictionary with keys that can be accessed as attributes
-  d['key'] == d.key
+  A dictionary with keys that can be accessed as attributes e.g. d['key'] == d.key
+  NOTE: Causes a memory leak on Python < 2.7.3
   """
-  def __setattr__(self, key, val): self[key] = val
-  def __getattr__(self, key): return self[key]
+  def __init__(self, *args, **kwargs):
+    super(AttributeDict, self).__init__(*args, **kwargs)
+    self.__dict__ = self
 
 
 class FieldSet(object):
@@ -229,7 +230,7 @@ if __name__ == '__main__':
   merged = [article.dumps() for article in articles]
   formatted = {
     'dict':   lambda: merged,
-    'json':   lambda: json.dumps(merged, indent=2, sort_keys=True, ensure_ascii=False),
+    'json':   lambda: json.dumps(merged, indent=2, ensure_ascii=False),
     'pickle': lambda: pickle.dumps(merged),
   }.get(args.encoding, lambda: None)()
 
