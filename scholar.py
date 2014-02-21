@@ -249,6 +249,7 @@ def email_developer(msg, subject='Bugreport for scholar package',
 _REPORT = (
   '--------------------------------',
   ' Integrity Tests:    {status}   ',
+  '--------------------------------',
   '                                ',
   ' Article find_all:   {find_all} ',
   ' Fields:                        ',
@@ -271,14 +272,14 @@ def test_integrity(email_report=True):
   fields = ''
   if not articles:
     status = 'FAILED'
-    fields = _FIELD_REPORT.format(field='NO INFORMATION')
+    fields = _FIELD_REPORT.format(field='NO INFORMATION', status='')
     find_all = 'FAILED'
   else:
     for field in Article.fields():
       default = getattr(Article, field).default
       failed = all([getattr(article, field) == default for article in articles])
       if failed: status = 'FAILED'
-      fields += _FIELD_REPORT.format(field=field, status='FAILED' if failed else 'PASSED')
+      fields += _FIELD_REPORT.format(field=field, status='FAILED*' if failed else 'PASSED')
 
   report = '\n'.join(_REPORT).format(status=status, find_all=find_all, fields=fields)
   return AttributeDict({'report': report, 'passed': status == 'PASSED'})
