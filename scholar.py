@@ -157,6 +157,9 @@ class Parser(object):
     return results
 
 
+# ----------------------------------------------------------------------------
+# Google Scholar URL spec
+# ----------------------------------------------------------------------------
 _URL_ROOT   = 'http://scholar.google.com'
 _URL_META   = '/scholar?hl=en&btnG=Search&as_subj=eng&as_sdt=1,5&as_ylo=&as_vis=0'
 _URL_QUERY  = '&q={query}'
@@ -172,8 +175,13 @@ def _format_url(query, author=''):
 # ----------------------------------------------------------------------------
 class Article(FieldSet):
   """
-  A concrete Fieldset for scraping article information from a
-  Google Scholar query
+  A concrete Fieldset for scraping article information from a Google Scholar query
+  Update this as the Scholar html/css changes
+
+  Attributes
+    find_all - a soup expression to parse an Article out of a full response soup
+    Field()  - Field instances that describe how each field (title, authors, etc)
+               can be parsed out of the context of an Article soup
   """
   find_all      = staticmethod(lambda soup: soup.find(role='main').find_all(class_="gs_r"))
   title         = Field(lambda soup: re.sub(r'\[[A-Z]+\]', '', soup.find('h3').text).strip())
