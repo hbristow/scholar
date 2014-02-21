@@ -164,13 +164,13 @@ class Article(FieldSet):
   A concrete Fieldset for scraping article information from a
   Google Scholar query
   """
-  find_all      = staticmethod(lambda soup: soup.find(role='main').find_all(class_="gs_ri"))
-  title         = Field(lambda soup: soup.find('h3').text.lstrip('[PDF]').strip())
+  find_all      = staticmethod(lambda soup: soup.find(role='main').find_all(class_="gs_r"))
+  title         = Field(lambda soup: re.sub(r'\[[A-Z]+\]', '', soup.find('h3').text).strip())
   authors       = Field(lambda soup: soup.find(class_='gs_a').text.split('-')[0].strip())
   year          = Field(lambda soup: re.search(r'[0-9]{4}', soup.find(class_='gs_a').text).group(0), type=int)
   num_citations = Field(lambda soup: re.search(r'Cited by ([0-9]+)', soup.text).group(1), type=int)
   num_versions  = Field(lambda soup: re.search(r'All ([0-9]+) versions', soup.text).group(1), type=int)
-  url           = Field('')
+  pdf_url       = Field(lambda soup: soup.find('a', {'href': re.compile(r'.pdf$')})['href'])
   citations_url = Field('')
   versions_url  = Field('')
 
